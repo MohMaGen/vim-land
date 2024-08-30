@@ -72,10 +72,17 @@ typedef struct iter_c {
 typedef struct filter_ptr {
     iter_c data; int (*predicat)(opt_ptr_c);
 } filter_ptr_t;
+
+typedef struct map_ptr { 
+    iter_c data; opt_ptr_c (*func)(opt_ptr_c); 
+} map_ptr_t;
+
 iter_c filter(iter_c iter, int (*predicat)(opt_ptr_c));
-opt_ptr_c filter_next(void *);
+
 iter_c until(iter_c iter, int (*predicat)(opt_ptr_c));
-opt_ptr_c until_next(void *);
+
+iter_c map(iter_c iter, opt_ptr_c (*func)(opt_ptr_c));
+
 
 #define for_each(it_name, it)\
     for (opt_ptr_c it_name = it.next(iter.self); it_name.is_some(it_name.self); it_name = it.next(iter.self))

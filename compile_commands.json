@@ -1,1 +1,17 @@
-[ { "file": "src/core/game.c", "directory": "/projects/vim-land", "command": "/usr/bin/gcc -o compile_commands_game -c src/core/game.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread" }, { "file": "src/core/graphic.c", "directory": "/projects/vim-land", "command": "/usr/bin/gcc -o compile_commands_graphic -c src/core/graphic.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread" }, { "file": "src/main.c", "directory": "/projects/vim-land", "command": "/usr/bin/gcc -o target/linux/objs/main.o -c src/main.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread" } ]
+[
+  {
+    "file": "src/core/game.c",
+    "directory": "/projects/vim-land",
+    "command": "/usr/bin/gcc -o compile_commands_game -c src/core/game.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread"
+  },
+  {
+    "file": "src/core/graphic.c",
+    "directory": "/projects/vim-land",
+    "command": "/usr/bin/gcc -o compile_commands_graphic -c src/core/graphic.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread"
+  },
+  {
+    "file": "src/main.c",
+    "directory": "/projects/vim-land",
+    "command": "/usr/bin/gcc -o target/linux/objs/main.o -c src/main.c -Wall -Werror -g -v -I src/core/ -I inc/ -L target/linux/libs/ -lraylib -lm -lpthread"
+  }
+]

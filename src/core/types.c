@@ -56,10 +56,22 @@ iter_c until(iter_c iter, int (*predicat)(opt_ptr_c)) {
 
     return (iter_c) {
         (void*) f,
-        &filter_next,
+        &until_next,
     };
 }
 
+opt_ptr_c map_next(void *self) {
+    map_ptr_t *m = (map_ptr_t *)self;
+
+    opt_ptr_c next = m->data.next(m->data.self);
+
+    return (!next.is_some(next.self))?  none_opt_char() : m->func(next);
+}
+iter_c map(iter_c iter, opt_ptr_c (*func)(opt_ptr_c)) {
+    map_ptr_t *m = malloc(sizeof(map_ptr_t));
+    *m = (map_ptr_t) { iter, func };
+    return (iter_c) { (void*)m, &map_next };
+}
 
 impl_array_iter_(int, int)
 impl_array_iter_(int8,  int8_t)
