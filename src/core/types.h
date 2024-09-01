@@ -141,15 +141,11 @@ array_iter_(f64, double);
     type *vec_## name ##_at       (vec_## name ##_t *vector, size_t idx);\
     void  vec_## name ##_remove   (vec_## name ##_t *vector, size_t idx);\
     void  vec_## name ##_insert   (vec_## name ##_t *vector, size_t idx, type value);\
-    typedef struct vec_## name ##_iter {\
-        type *data; size_t curr, len;\
-    } vec_## name ##_iter_t;\
-    vec_## name ##_iter_t  vec_## name ##_iter(vec_## name ##_t *vector);\
-    type *vec_## name ##_iter_next(vec_## name ##_iter_t *iter);\
     \
     opt_(vec_##name, type*);\
-    opt_ptr_c vec_## name ##_next(vec_## name ##_iter_t *iter);\
-    opt_ptr_c vec_## name ##_get(vec_## name ##_t *vector, size_t idx)\
+    typedef struct vec_iter_##name { type *data; size_t curr, len; } vec_iter_##name##_t;\
+    opt_ptr_c vec_iter_##name##_next(void *self);\
+    iter_c  vec_## name ##_iter(vec_## name ##_t *vector)
 
 #define impl_vec_(name, type)\
     vec_## name ##_t alloc_vec_## name(size_t capacity) {\
@@ -213,27 +209,19 @@ array_iter_(f64, double);
         vector->len++;\
         vector->data[idx] = value;\
     }\
-    vec_## name ##_iter_t  vec_## name ##_iter(vec_## name ##_t *vector) {\
-        return (vec_## name ##_iter_t) { vector->data, 0, vector->len };\
-    }\
-    type *vec_## name ##_iter_next(vec_## name ##_iter_t *iter) {\
-        if (iter->curr >= iter->len) {\
-            return NULL;\
-        }\
-        return iter->data + iter->curr++;\
-    }\
     impl_opt_(vec_##name, type*)\
-    opt_ptr_c vec_## name ##_next(vec_## name ##_iter_t *iter) {\
-        if (iter->curr >= iter->len) {\
+    opt_ptr_c vec_iter_##name##_next(void *self) {\
+        vec_iter_##name##_t *self_c = (vec_iter_##name##_t*)self;\
+        if (self_c->curr >= self_c->len) {\
             return none_opt_vec_##name();\
         }\
-        return alloc_opt_vec_##name(iter->data + iter->curr++);\
+        return alloc_opt_vec_##name(self_c->data + self_c->curr++);\
     }\
-    opt_ptr_c vec_## name ##_get(vec_## name ##_t *vector, size_t idx) {\
-        type *res = vec_##name##_at(vector, idx);\
-        if (res == NULL) return none_opt_vec_##name();\
-        return alloc_opt_vec_##name(res);\
-    }\
+    iter_c  vec_## name ##_iter(vec_##name##_t *vec) {\
+        vec_iter_##name##_t *iter = malloc(sizeof(vec_iter_##name##_t));\
+        *iter = (vec_iter_##name##_t) { vec->data, 0, vec->len };\
+        return (iter_c) { (void*)iter, &vec_iter_##name##_next };\
+    }
 
 // default vectors
 vec_(int, int);

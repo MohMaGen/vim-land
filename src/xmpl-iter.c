@@ -18,10 +18,22 @@ int not_ten(opt_ptr_c v) {
     return value != 10;
 
 }
+
 opt_ptr_c mul_by_2(opt_ptr_c v) {
     int value = *unwrap_opt(opt_array_iter_int_t, v);
     return alloc_opt_int(value * 2);
 }
+
+opt_ptr_c to_a_rep(opt_ptr_c v) {
+    int value = unwrap_opt(opt_int_t, v);
+    char *a = malloc(value * sizeof(char));
+    for (int i = 0; i < value; i++)
+        a[i] = 'A';
+
+    return alloc_opt_str(a);
+}
+
+
 
 int main() {
     char hello_world[] = "Hello, world!";
@@ -39,9 +51,10 @@ int main() {
     iter = filter(iter, even_int);
     iter = until(iter, not_ten);
     iter = map(iter, mul_by_2);
+    iter = map(iter, to_a_rep);
     for_each (curr, iter) {
-        int ptr = unwrap_opt(opt_int_t, curr);
-        printf("[%d]\n", ptr);
+        char *ptr = unwrap_opt(opt_str_t, curr);
+        printf("[%s]\n", ptr);
     }
     printf("\n");
     free(((filter_ptr_t*)iter.self)->data.self);
