@@ -1,3 +1,4 @@
+#include "types.h"
 #include <raylib.h>
 #include <shaders.h>
 
@@ -33,10 +34,11 @@ void init_shaders(void) {
 }
 
 void free_shaders(void) {
-    vec_shader_iter_t iter = vec_shader_iter(&shaders);
-    for (shader_t *c = vec_shader_iter_next(&iter); c != NULL; c = vec_shader_iter_next(&iter)) {
-        UnloadShader(sht2rls(*c));
-        vec_int_free(&c->custom_locs);
+    iter_c iter = vec_shader_iter(&shaders);
+    for_each(shader_it, iter) {
+        shader_t *shader = unwrap_opt(opt_vec_shader_t, shader_it);
+        UnloadShader(sht2rls(*shader));
+        vec_int_free(&shader->custom_locs);
     }
     vec_shader_free(&shaders);
 }

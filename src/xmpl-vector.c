@@ -13,7 +13,7 @@ int data[] = { 10, 20, 30, 40 };
         }\
     }
 
-int main() {
+int main(void) {
     vec_int_t vec = alloc_vec_int(10);
     vec_int_push(&vec, 20);
     vec_int_push(&vec, 40);

@@ -2,7 +2,7 @@
 #include <graphic.h>
 #include <game.h>
 
-int main() {
+int main(void) {
     init_game();
     init_shaders();
 

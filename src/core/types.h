@@ -22,10 +22,10 @@ typedef struct opt_ptr_c {
 #define unwrap_opt(type, opt) (((type *) opt.self)->data)
 
 #define opt_(name, type)\
-    typedef struct opt_## name { uint8_t is_some; type data; } opt_## name ##_t;\
+    typedef struct opt_##name { uint8_t is_some; type data; } opt_##name##_t;\
     uint8_t opt_## name ##_is_some( void *);\
     opt_##name##_t make_opt_##name(type value);\
-    opt_ptr_c none_opt_##name();\
+    opt_ptr_c none_opt_##name(void);\
     opt_ptr_c alloc_opt_##name(type value)
 
 #define impl_opt_(name, type)\
@@ -35,7 +35,7 @@ typedef struct opt_ptr_c {
     opt_##name##_t make_opt_##name(type value) {\
         return (opt_##name##_t) { 1, value };\
     }\
-    opt_ptr_c none_opt_##name() {\
+    opt_ptr_c none_opt_##name(void) {\
         opt_##name##_t *opt = malloc(sizeof(opt_##name##_t));\
         opt->is_some = 0;\
         return mk_opt_ptr(opt, &opt_## name ##_is_some);\
@@ -85,7 +85,7 @@ iter_c map(iter_c iter, opt_ptr_c (*func)(opt_ptr_c));
 
 
 #define for_each(it_name, it)\
-    for (opt_ptr_c it_name = it.next(iter.self); it_name.is_some(it_name.self); it_name = it.next(iter.self))
+    for (opt_ptr_c it_name = it.next(it.self); it_name.is_some(it_name.self); it_name = it.next(it.self))
 
 #define array_iter_(name, type)\
     typedef struct array_iter_##name { type *data; size_t len, curr; } array_iter_##name##_t;\
@@ -144,7 +144,6 @@ array_iter_(f64, double);
     \
     opt_(vec_##name, type*);\
     typedef struct vec_iter_##name { type *data; size_t curr, len; } vec_iter_##name##_t;\
-    opt_ptr_c vec_iter_##name##_next(void *self);\
     iter_c  vec_## name ##_iter(vec_## name ##_t *vector)
 
 #define impl_vec_(name, type)\
@@ -247,55 +246,68 @@ const size_t *get_hsmap_primes(void);
 #define hash_map_(name, key_type, value_type)\
     typedef struct { key_type key; value_type value; } hsmap_## name ##_pair_t;\
     vec_(hsmap_## name ##_row, hsmap_## name ##_pair_t);\
-    vec_(hsmap_## name ##_data, vec_hsmap_## name ##_row_t)\
+    vec_(hsmap_## name ##_data, vec_hsmap_## name ##_row_t);\
     typedef struct hsmap_## name {\
-        vec_hsmap_## name ##_data_t data\
+        vec_hsmap_## name ##_data_t data;\
         size_t len;\
     } hsmap_## name ##_t;\
     \
     hsmap_## name ##_t alloc_hsmap_## name      (size_t prime_idx);\
     \
-    void        hsmap_## name ##_insert  (hsmap_## name ##_t *, key_type, value_type);\
-    void        hsmap_## name ##_remove  (hsmap_## name ##_t *, key_type);\
-    value_type *hsmap_## name ##_at      (hsmap_## name ##_t *, key_type);\
+    void         hsmap_## name ##_free     (hsmap_##name##_t *map);\
+    void        hsmap_## name ##_insert    (hsmap_## name ##_t *, key_type, value_type);\
+    void        hsmap_## name ##_remove    (hsmap_## name ##_t *, key_type);\
+    value_type *hsmap_## name ##_at        (hsmap_## name ##_t *, key_type);\
+    void        hsmap_## name ##_append    (hsmap_## name ##_t *,\
+                                             hsmap_##name##_pair_t *data, size_t len);\
+    void        hsmap_## name ##_append_it (hsmap_## name ##_t *, iter_c data);\
     \
     typedef struct hsmap_## name ##_iter {\
         vec_hsmap_## name ##_data_t data; size_t d_idx, r_idx;\
     } hsmap_## name ##_iter_t;\
-    hsmap_## name ##_iter_t hsmap_## name ##_iter(hsmape_ ## name ##_t *map);\
-    \
+    iter_c hsmap_## name ##_iter(hsmap_ ## name ##_t *map)\
 
 
 
 #define impl_hash_map_(name, key_type, value_type, eq_func, hash_func)\
+    impl_vec_(hsmap_## name ##_row, hsmap_## name ##_pair_t)\
+    impl_vec_(hsmap_## name ##_data, vec_hsmap_## name ##_row_t)\
     hsmap_## name ##_t alloc_hsmap_## name      (size_t prime_idx) {\
         hsmap_## name ##_t map;\
         size_t len = get_hsmap_primes()[prime_idx];\
-        map.data = alloc_vec_## name ##_data_t(len);\
+        map.data = alloc_vec_hsmap_## name ##_data(len);\
         map.len = 0;\
         for (size_t i = 0; i < len; i++) \
-            vec_hsmap_## name ##_data_push(alloc_vec_hsmap_## name ##_row(len / 10));\
+            vec_hsmap_## name ##_data_push(&map.data, alloc_vec_hsmap_## name ##_row(len / 10));\
         \
         return map;\
+    }\
+    void hsmap_## name ##_free(hsmap_##name##_t *map) {\
+        iter_c rows = vec_hsmap_##name##_data_iter(&map->data);\
+        for_each(row_it, rows) {\
+            vec_hsmap_##name##_row_t *row = unwrap_opt(opt_vec_hsmap_##name##_data_t, row_it);\
+            vec_hsmap_##name##_row_free(row);\
+        }\
+        vec_hsmap_##name##_data_free(&map->data);\
     }\
     void hsmap_## name ##_insert(hsmap_## name ##_t * map, key_type key, value_type value) {\
         size_t idx = hash_func(key) % map->data.capacity;\
         map->len++;\
-        vec_hsmap_## name ##_row_t *row = vec_hsmap_## name ##_data_at(map, idx);\
-        vec_hsmap_## name ##_row_iter_t iter = vec_hsmap_## name ##_row_iter(row);\
-        hsmap_## name ##_pair_t *curr;\
-        while ((curr = vec_hsmap_## name ##_row_iter_next(&iter)) != NULL) {\
+        vec_hsmap_## name ##_row_t *row = vec_hsmap_## name ##_data_at(&map->data, idx);\
+        iter_c iter = vec_hsmap_## name ##_row_iter(row);\
+        for_each(it, iter) {\
+            hsmap_##name##_pair_t *curr = unwrap_opt(opt_vec_hsmap_## name ##_row_t, it);\
             if (eq_func(curr->key, key)) {\
                 curr->value = value;\
                 return;\
             }\
         }\
-        vec_hsmap_## name ##_row_push(row, value);\
+        vec_hsmap_## name ##_row_push(row, (hsmap_##name##_pair_t) {key, value});\
     }\
     void hsmap_## name ##_remove(hsmap_## name ##_t *map, key_type key) {\
         size_t idx = hash_func(key) % map->data.capacity;\
         map->len--;\
-        vec_hsmap_## name ##_row_t *row = vec_hsmap_## name ##_data_at(map, idx);\
+        vec_hsmap_## name ##_row_t *row = vec_hsmap_## name ##_data_at(&map->data, idx);\
         for (size_t i = 0; i < row->len; i++) {\
             if (eq_func(row->data[i].key, key)) {\
                 vec_hsmap_## name ##_row_remove(row, i);\
@@ -305,16 +317,49 @@ const size_t *get_hsmap_primes(void);
     }\
     value_type *hsmap_## name ##_at(hsmap_## name ##_t *map, key_type key) {\
         size_t idx = hash_func(key) % map->data.capacity;\
-        vec_hsmap_## name ##_row_t * row = vec_hsmap_## name ##_data_at(map, idx);\
+        vec_hsmap_## name ##_row_t * row = vec_hsmap_## name ##_data_at(&map->data, idx);\
         size_t i; for (i = 0; i < row->len; i++) {\
             if (eq_func(row->data[i].key, key)) {\
                 break;\
             }\
         }\
-        return vec_hsmap_## name ##_row_at(map, i);\
+        return &vec_hsmap_## name ##_row_at(row, i)->value;\
     }\
-    hsmap_## name ##_iter_t hsmap_## name ##_iter(hsmape_ ## name ##_t *map) {\
-        return (hsmap_## name ##_iter_t) { map->data, 0, 0 };\
+    void hsmap_## name ##_append(hsmap_##name##_t *map,\
+                                            hsmap_##name##_pair_t *data, size_t len)\
+    {\
+        for (size_t i = 0; i < len; i++) {\
+            hsmap_##name##_insert(map, data[i].key, data[i].value);\
+        }\
+    }\
+    void hsmap_## name ##_append_it(hsmap_## name ##_t *map, iter_c data) {\
+        for_each(pair_it, data) {\
+            hsmap_##name##_pair_t *pair = unwrap_opt(opt_vec_hsmap_##name##_row_t, pair_it);\
+            hsmap_##name##_insert(map, pair->key, pair->value);\
+        }\
+    }\
+    opt_ptr_c hsmap_##name##_iter_next(void *self) {\
+        hsmap_##name##_iter_t *self_c =  (hsmap_##name##_iter_t*) self;\
+        vec_hsmap_##name##_row_t *row = vec_hsmap_##name##_data_at(&self_c->data, self_c->d_idx);\
+        if (row == NULL) return none_opt_char();\
+        \
+        hsmap_##name##_pair_t *res = vec_hsmap_##name##_row_at(row, self_c->r_idx);\
+        if (res == NULL) {\
+            self_c->r_idx = 0;\
+            do {\
+                self_c->d_idx++;\
+                row = vec_hsmap_##name##_data_at(&self_c->data, self_c->d_idx);\
+                if (row == NULL) return none_opt_char();\
+                res = vec_hsmap_##name##_row_at(row, self_c->r_idx);\
+            } while (res == NULL);\
+        }\
+        self_c->r_idx++;\
+        return alloc_opt_vec_hsmap_##name##_row(res);\
+    }\
+    iter_c hsmap_##name##_iter(hsmap_##name##_t *map) {\
+        hsmap_##name##_iter_t *iter = malloc(sizeof(hsmap_##name##_iter_t));\
+        *iter = (hsmap_##name##_iter_t) { map->data, 0, 0 };\
+        return  (iter_c) { (void *) iter, &hsmap_##name##_iter_next };\
     }\
 
 

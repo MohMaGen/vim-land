@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 
-opt_ptr_c get_number() {
+opt_ptr_c get_number(void) {
     int number;
     char buffer[100];
 
