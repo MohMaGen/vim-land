@@ -25,12 +25,12 @@ debug: prepare-dirs include-shaders raylib $(name)-debug
 
 prepare-dirs:
 	@echo "prepare dirs:"
-	mkdir -p target/linux/objs
-	mkdir -p target/windows/objs
-	mkdir -p target/linux/libs
-	mkdir -p target/windows/libs
-	mkdir -p target/linux/xmpls
-	mkdir -p target/windows/xmpls
+	@mkdir -p target/linux/objs
+	@mkdir -p target/windows/objs
+	@mkdir -p target/linux/libs
+	@mkdir -p target/windows/libs
+	@mkdir -p target/linux/xmpls
+	@mkdir -p target/windows/xmpls
 
 raylib:
 	@echo "build raylib"
@@ -55,7 +55,7 @@ main-src := $(src-dir)main.c
 main-obj := $(target-objs-dir)main.o
 main-exe := $(target-dir)$(name)-debug
 
-compiler-flags := -Wall -Werror -g3 -ggdb -v --pedantic -pedantic-errors
+compiler-flags := -Wall -Werror -g3 -ggdb --pedantic -pedantic-errors
 libs := -lraylib -lm -lpthread
 linker-flags := -I $(private-incl-dir) -I $(public-incl-dir) -L $(target-libs-dir) $(libs)
 
@@ -82,14 +82,36 @@ $(objects): $(target-objs-dir)%.o: $(core-dir)%.c
 	@echo "build core object {$@}"
 	@$(compiler) -o $@ -c $< $(compiler-flags) $(linker-flags)
 
+
+
+
+tests-dir := tests/
+tests-srcs := $(wildcard $(tests-dir)*.c)
+tests-objs := $(patsubst $(tests-dir)%.c, $(target-objs-dir)__test_%.o, $(tests-srcs))
+tests-linker-flags := -I $(tests-dir) $(linker-flags)
+
+run-tests: prepare-dirs raylib $(objects) $(tests-objs)
+	echo "$(tests-srcs) $(tests-objs)"
+	$(compiler) -o $(target-dir)__run-tests $(objects) $(tests-objs) $(compiler-flags) $(tests-linker-flags)
+	$(target-dir)__run-tests
+
+$(tests-objs): $(target-objs-dir)__test_%.o: $(tests-dir)%.c
+	$(compiler) -o $@ -c $< $(compiler-flags) $(tests-linker-flags)
+
+
 commands-srcs := $(patsubst $(core-dir)%.c, compile_commands_%, $(sources))
-compile-commands: clear-compile-commands $(commands-srcs) commands_main
+commands-tests_srcs := $(patsubst $(tests-dir)%.c, compile_commands_tests_%, $(tests-srcs))
+
+compile-commands: clear-compile-commands $(commands-srcs) $(commands-tests_srcs) commands_main
 
 clear-compile-commands:
 	bash -c "[[ -f ./compile_commands.json ]] && rm ./compile_commands.json || echo a"
 
 $(commands-srcs): compile_commands_%: $(core-dir)%.c
 	./scripts/add_obj_to_compile_commands.sh $< "$(compiler) -o $@ -c $< $(compiler-flags) $(linker-flags)"
+
+$(commands-tests_srcs): compile_commands_tests_%: $(tests-dir)%.c
+	./scripts/add_obj_to_compile_commands.sh $< "$(compiler) -o $@ -c $< $(compiler-flags) $(tests-linker-flags)"
 
 commands_main:
 	./scripts/add_obj_to_compile_commands.sh $(main-src) "$(compiler) -o $(main-obj) -c $(main-src) $(compiler-flags) $(linker-flags)"
