@@ -90,14 +90,16 @@ tests-dir := tests/
 tests-srcs := $(wildcard $(tests-dir)*.c)
 tests-objs := $(patsubst $(tests-dir)%.c, $(target-objs-dir)__test_%.o, $(tests-srcs))
 tests-linker-flags := -I $(tests-dir) $(linker-flags)
+tests-headers := $(wildcard $(tests-dir)*.h)
 
 run-tests: prepare-dirs raylib $(objects) $(tests-objs)
-	echo "$(tests-srcs) $(tests-objs)"
-	$(compiler) -o $(target-dir)__run-tests $(objects) $(tests-objs) $(compiler-flags) $(tests-linker-flags)
-	$(target-dir)__run-tests
+	@echo "build run-test"
+	@$(compiler) -o $(target-dir)__run-tests $(objects) $(tests-objs) $(compiler-flags) $(tests-linker-flags)
+	@$(target-dir)__run-tests
 
-$(tests-objs): $(target-objs-dir)__test_%.o: $(tests-dir)%.c
-	$(compiler) -o $@ -c $< $(compiler-flags) $(tests-linker-flags)
+$(tests-objs): $(target-objs-dir)__test_%.o: $(tests-dir)%.c $(tests-headers) $(headers)
+	@echo "build test object {$@}"
+	@$(compiler) -o $@ -c $< $(compiler-flags) $(tests-linker-flags)
 
 
 commands-srcs := $(patsubst $(core-dir)%.c, compile_commands_%, $(sources))
