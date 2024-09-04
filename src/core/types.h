@@ -7,12 +7,12 @@ typedef struct pixel_size { uint32_t widht, height; }   px_size_t;
 typedef struct pixel_pair { uint32_t fst, snd; }        px_pair_t;
 typedef struct pixel_pos  { uint32_t x, y; }            px_pos_t;
 
-#define mkpx_size (width, height)   ((px_size_t) { widht, height})
-#define mkpx_pair (fst, snd)        ((px_pair_t) { fst, snd})
-#define mkpx_pos  (x, y)            ((px_pos_t)  { x, y})
+#define mkpx_size (width, height)   ((px_size_t) { widht, height })
+#define mkpx_pair (fst, snd)        ((px_pair_t) { fst, snd })
+#define mkpx_pos  (x, y)            ((px_pos_t)  { x, y })
 
-#define px_p2size (pair)            ((px_size_t) { pair.fst, pair.snd})
-#define px_p2pos  (pair)            ((px_pos_t)  { pair.fst, pair.snd})
+#define px_p2size (pair)            ((px_size_t) { pair.fst, pair.snd })
+#define px_p2pos  (pair)            ((px_pos_t)  { pair.fst, pair.snd })
 
 
 typedef struct opt_ptr_c {

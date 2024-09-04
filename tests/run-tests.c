@@ -14,8 +14,8 @@ int main(void) {
     for_each(iter, tests_iter) {
         test_t *test = unwrap_opt(opt_vec_tests_t, iter);
 
-        printf("\x1b[0;34;m( -> ) run test \x1b[1;m`%s`\x1b[0m from \x1b[1;m`%%s`\x1b[0m: ...",
-                test->name);
+        printf("\x1b[0;34;m( -> ) run test \x1b[1;m`%s`\x1b[0;34m from \x1b[1;m`%s`\x1b[0m: ...",
+                test->name, test->group);
         fflush(stdout);
 
         opt_ptr_c res = test->test();
