@@ -48,6 +48,7 @@ typedef struct opt_ptr_c {
     }\
 
 opt_(int, int);
+opt_(usize, size_t);
 
 opt_(int8,  int8_t);
 opt_(int16, int16_t);
@@ -362,4 +363,38 @@ const size_t *get_hsmap_primes(void);
         return  (iter_c) { (void *) iter, &hsmap_##name##_iter_next };\
     }\
 
+int str_eq(const char *fst, const char *snd);
+size_t str_hash(const char *str);
 
+hash_map_(strs, char *, char *);
+
+hash_map_(ints, int, int);
+
+hash_map_(ints_8, int8_t, int8_t);
+hash_map_(ints_16, int16_t, int16_t);
+hash_map_(ints_32, int32_t, int32_t);
+hash_map_(ints_64, int64_t, int64_t);
+
+hash_map_(uints_8, uint8_t, uint8_t);
+hash_map_(uints_16, uint16_t, uint16_t);
+hash_map_(uints_32, uint32_t, uint32_t);
+hash_map_(uints_64, uint64_t, uint64_t);
+
+#define hsmap_str_to_(name, value_type) hash_map_(str_##name, char *, value_type)
+#define impl_hsmap_str_to_(name, value_type) impl_hash_map_(str_##name, char *, value_type, str_eq, str_hash)
+
+
+hsmap_str_to_(int, int);
+
+hsmap_str_to_(int8,  int8_t);
+hsmap_str_to_(int16, int16_t);
+hsmap_str_to_(int32, int16_t);
+hsmap_str_to_(int64, int64_t);
+
+hsmap_str_to_(uint8,  uint8_t);
+hsmap_str_to_(uint16, uint16_t);
+hsmap_str_to_(uint32, uint16_t);
+hsmap_str_to_(uint64, uint64_t);
+
+hsmap_str_to_(f32, float);
+hsmap_str_to_(f64, double);

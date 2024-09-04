@@ -19,7 +19,6 @@ size_t str_hash(const char *str) {
     return hash;
 }
 
-hash_map_(strs, char*, char *);
 impl_hash_map_(strs, char*, char *, str_eq, str_hash)
 
 void print_map_structure(hsmap_strs_t *map) {

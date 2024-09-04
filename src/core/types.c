@@ -1,7 +1,9 @@
+#include <string.h>
 #include <types.h>
 
 
 impl_opt_(int, int)
+impl_opt_(usize, size_t)
 
 impl_opt_(int8,  int8_t)
 impl_opt_(int16, int16_t)
@@ -98,8 +100,7 @@ impl_vec_(int16, int16_t)
 impl_vec_(int32, int16_t)
 impl_vec_(int64, int64_t)
 
-impl_vec_(uint8,  uint8_t)
-impl_vec_(uint16, uint16_t)
+impl_vec_(uint8,  uint8_t) impl_vec_(uint16, uint16_t)
 impl_vec_(uint32, uint16_t)
 impl_vec_(uint64, uint64_t)
 
@@ -118,3 +119,52 @@ size_t primes[] = {
 const size_t *get_hsmap_primes(void) {
     return primes;
 }
+
+int str_eq(const char *fst, const char *snd) {
+    return strcmp(fst, snd) == 0;
+}
+size_t str_hash(const char *str) {
+    size_t len;
+    size_t hash, str_iter;
+    int c;
+
+    len = strlen(str);
+    hash = 5381;
+    for (str_iter = 0; str_iter < len; str_iter++) {
+        c = ((unsigned char*) str)[str_iter];
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash;
+}
+
+#define simpl_eq(a, b) (a == b)
+#define simpl_hash(a) ((size_t) a)
+
+impl_hash_map_(strs, char *, char *, str_eq, str_hash)
+impl_hash_map_(ints, int, int, simpl_eq, simpl_hash)
+
+impl_hash_map_(ints_8, int8_t, int8_t, simpl_eq, simpl_hash)
+impl_hash_map_(ints_16, int16_t, int16_t, simpl_eq, simpl_hash)
+impl_hash_map_(ints_32, int32_t, int32_t, simpl_eq, simpl_hash)
+impl_hash_map_(ints_64, int64_t, int64_t, simpl_eq, simpl_hash)
+
+impl_hash_map_(uints_8, uint8_t, uint8_t, simpl_eq, simpl_hash)
+impl_hash_map_(uints_16, uint16_t, uint16_t, simpl_eq, simpl_hash)
+impl_hash_map_(uints_32, uint32_t, uint32_t, simpl_eq, simpl_hash)
+impl_hash_map_(uints_64, uint64_t, uint64_t, simpl_eq, simpl_hash)
+
+
+impl_hsmap_str_to_(int, int)
+
+impl_hsmap_str_to_(int8,  int8_t)
+impl_hsmap_str_to_(int16, int16_t)
+impl_hsmap_str_to_(int32, int16_t)
+impl_hsmap_str_to_(int64, int64_t)
+
+impl_hsmap_str_to_(uint8,  uint8_t)
+impl_hsmap_str_to_(uint16, uint16_t)
+impl_hsmap_str_to_(uint32, uint16_t)
+impl_hsmap_str_to_(uint64, uint64_t)
+
+impl_hsmap_str_to_(f32, float)
+impl_hsmap_str_to_(f64, double)
