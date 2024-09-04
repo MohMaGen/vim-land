@@ -45,6 +45,7 @@ core-dir := $(src-dir)core/
 private-incl-dir := $(core-dir)
 
 sources := $(wildcard $(core-dir)*.c)
+headers := $(wildcard $(core-dir)*.h)
 objects := $(patsubst $(core-dir)%.c, $(target-objs-dir)%.o, $(sources))
 
 xmpls-srcs := $(wildcard $(src-dir)xmpl-*.c)
@@ -55,7 +56,7 @@ main-src := $(src-dir)main.c
 main-obj := $(target-objs-dir)main.o
 main-exe := $(target-dir)$(name)-debug
 
-compiler-flags := -Wall -Werror -g3 -ggdb --pedantic -pedantic-errors
+compiler-flags := -Wall -Werror -g3 -ggdb
 libs := -lraylib -lm -lpthread
 linker-flags := -I $(private-incl-dir) -I $(public-incl-dir) -L $(target-libs-dir) $(libs)
 
@@ -78,7 +79,7 @@ $(main-obj): $(main-src)
 	@echo "build main object:"
 	@$(compiler) -o $(main-obj) -c $(main-src) $(compiler-flags) $(linker-flags)
 
-$(objects): $(target-objs-dir)%.o: $(core-dir)%.c
+$(objects): $(target-objs-dir)%.o: $(core-dir)%.c $(headers)
 	@echo "build core object {$@}"
 	@$(compiler) -o $@ -c $< $(compiler-flags) $(linker-flags)
 

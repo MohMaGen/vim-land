@@ -44,5 +44,5 @@ end_test
 
 
 void hsmap_test_init(void) {
-    register_test(make_test_t(insert));
+    register_test(make_test_t(group, insert));
 }

@@ -7,7 +7,6 @@
 
 int main(void) {
     init_tests();
-
     hsmap_test_init();
 
 
@@ -17,6 +16,8 @@ int main(void) {
 
         printf("\x1b[0;34;m( -> ) run test \x1b[1;m`%s`\x1b[0m from \x1b[1;m`%%s`\x1b[0m: ...",
                 test->name);
+        fflush(stdout);
+
         opt_ptr_c res = test->test();
         if (!res.is_some(res.self)) {
             printf("\x1b[3D\x1b[3;32m(ok) test succed.\x1b[0m\n");

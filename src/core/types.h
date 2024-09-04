@@ -147,7 +147,10 @@ array_iter_(f64, double);
     typedef struct vec_iter_##name { type *data; size_t curr, len; } vec_iter_##name##_t;\
     iter_c  vec_## name ##_iter(vec_## name ##_t *vector)
 
-#define impl_vec_(name, type)\
+#define simple_set(x, y) (x = y)
+
+#define impl_vec_(name, type) impl_vec_pro_(name, type, simple_set)
+#define impl_vec_pro_(name, type, set_func)\
     vec_## name ##_t alloc_vec_## name(size_t capacity) {\
         return (vec_## name ##_t) { (type*)malloc( capacity * sizeof(type)), 0, capacity };\
     }\
@@ -166,23 +169,23 @@ array_iter_(f64, double);
         if (vector->len + len > vector->capacity) {\
             vector->capacity += len; vector->capacity *= 2;\
             type *new_data = malloc( vector->capacity * sizeof(type));\
-            for ( size_t i = 0; i < vector->len; i++) new_data[i] = vector->data[i];\
+            for ( size_t i = 0; i < vector->len; i++) set_func(new_data[i], vector->data[i]);\
             free(vector->data);\
             vector->data = new_data;\
         }\
         for ( size_t i = 0; i < len; i++ )\
-            vector->data[vector->len + i] = data[i];\
+            set_func(vector->data[vector->len + i], data[i]);\
         vector->len += len;\
     }\
     void  vec_## name ##_push     (vec_## name ##_t *vector, type value) {\
         if (vector->len >= vector->capacity) {\
             vector->capacity++; vector->capacity *= 2;\
             type *new_data = malloc( vector->capacity * sizeof(type) );\
-            for (size_t i = 0; i < vector->len; i++) new_data[i] = vector->data[i];\
+            for (size_t i = 0; i < vector->len; i++) set_func(new_data[i], vector->data[i]);\
             free(vector->data);\
             vector->data = new_data;\
         }\
-        vector->data[vector->len++] = value;\
+        set_func(vector->data[vector->len++], value);\
     }\
     void  vec_## name ##_pop      (vec_## name ##_t *vector) {\
         if (vector->len == 0) return;\
@@ -201,11 +204,11 @@ array_iter_(f64, double);
         if (vector->len >= vector->capacity) {\
             vector->capacity++; vector->capacity *= 2;\
             type *new_data = malloc( vector->capacity * sizeof(type) );\
-            for (size_t i = 0; i < vector->len; i++) new_data[i] = vector->data[i];\
+            for (size_t i = 0; i < vector->len; i++) set_func(new_data[i], vector->data[i]);\
             free(vector->data);\
             vector->data = new_data;\
         }\
-        for (size_t jdx = vector->len; jdx > idx; jdx--) vector->data[jdx] = vector->data[jdx-1];\
+        for (size_t jdx = vector->len; jdx > idx; jdx--) set_func(vector->data[jdx], vector->data[jdx-1]);\
         vector->len++;\
         vector->data[idx] = value;\
     }\

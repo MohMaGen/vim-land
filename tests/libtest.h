@@ -14,13 +14,13 @@ typedef struct test_error {
 
 opt_(test_err, test_error_t);
 
-typedef struct test { char *name; opt_ptr_c (*test)(void); } test_t;
+typedef struct test { char *group; char *name; opt_ptr_c (*test)(void); } test_t;
 vec_(tests, test_t);
 
 void register_test(test_t);
 iter_c iter_tests(void);
 
-#define make_test_t(name) ((test_t) { #name, &test_##name})
+#define make_test_t(group, name) ((test_t) { #group, #name, &test_##name})
 
 #define start_test(name)\
     opt_ptr_c test_##name(void) {\
