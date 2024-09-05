@@ -30,12 +30,6 @@ iter_c iter_tests(void);
 
 #define test_error(error) (alloc_opt_test_err((test_error_t) {error}))
 
-#define assert_eq(must_be, actual) if (must_be != actual) {\
-        char *error = malloc(1024 * sizeof(char));\
-        *error = '\0';\
-        sprintf(error, "must be `%s`, but actual is `%s`.", #must_be, #actual);\
-        return test_error(error);\
-    }
 #define assert_eq_str(must_be, actual) if (strcmp(must_be, actual) != 0) {\
         char *error = malloc(1024 * sizeof(char));\
         *error = '\0';\
@@ -43,6 +37,19 @@ iter_c iter_tests(void);
         return test_error(error);\
     }
 
+#define assert_eq_int(must_be, actual) if (must_be != actual) {\
+        char *error = malloc(1024 * sizeof(char));\
+        *error = '\0';\
+        sprintf(error, "must be `%d`, but actual is `%d`.", must_be, actual);\
+        return test_error(error);\
+    }
+
+#define assert_null(value) if (value != NULL) {\
+        char *error = malloc(1024 * sizeof(char));\
+        *error = '\0';\
+        sprintf(error, "value must be null, but it's: `%ld`.", (unsigned long) value);\
+        return test_error(error);\
+    }
 /*
 *  _____ _____ ____ _____ ____
 * |_   _| ____/ ___|_   _/ ___|
