@@ -1,25 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <types.h>
 
-int str_eq(const char *fst, const char *snd) {
-    return strcmp(fst, snd) == 0;
-}
-size_t str_hash(const char *str) {
-    size_t len;
-    size_t hash, str_iter;
-    int c;
-
-    len = strlen(str);
-    hash = 5381;
-    for (str_iter = 0; str_iter < len; str_iter++) {
-        c = ((unsigned char*) str)[str_iter];
-        hash = ((hash << 5) + hash) + c;
-    }
-    return hash;
-}
-
-impl_hash_map_(strs, char*, char *, str_eq, str_hash)
 
 void print_map_structure(hsmap_strs_t *map) {
     iter_c rows = vec_hsmap_strs_data_iter(&map->data);
@@ -300,6 +281,7 @@ hsmap_strs_pair_t pairs_lol[] = {
     { "lol_Adfs-99", "bi" },
     { "lol_Adfs-100", "bi" },
 };
+
 hsmap_strs_pair_t *get_pairs(void) {
     return pairs_lol;
 }
