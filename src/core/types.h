@@ -402,3 +402,19 @@ hsmap_str_to_(uint64, uint64_t);
 
 hsmap_str_to_(f32, float);
 hsmap_str_to_(f64, double);
+
+
+#define arnmap_(name, key_type, value_type)\
+    typedef struct arena_map_##name##_pair { key_type key, value_type value, size_t next_arena_ptr } arnmap_##name##_pair_t;\
+    typedef struct arnmap_##name { arnmap_##name##_pair_t *data, size_t len, cap, order; } arnmap_##name##_t;\
+    arena_map_##name##_pair_t make_arena_map##name (size_t order);\
+    void free_arena_map##name (arena_map_##name##_pair_t *map);\
+    \
+    void        arena_map_## name ##_free      (arena_map_##name##_t *map);\
+    void        arena_map_## name ##_insert    (arena_map_## name ##_t *, key_type, value_type);\
+    void        arena_map_## name ##_remove    (arena_map_## name ##_t *, key_type);\
+    value_type *arena_map_## name ##_at        (arena_map_## name ##_t *, key_type);\
+    void        arena_map_## name ##_append    (arena_map_## name ##_t *,\
+                                                           arena_map_##name##_pair_t *data, size_t len);\
+    void        arena_map_## name ##_append_it (arena_map_## name ##_t *, iter_c data);\
+
