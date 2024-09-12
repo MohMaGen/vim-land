@@ -30,19 +30,41 @@ iter_c iter_tests(void);
 
 #define test_error(error) (alloc_opt_test_err((test_error_t) {error}))
 
-#define assert_eq(must_be, actual) if (must_be != actual) {\
-        char *error = malloc(1024 * sizeof(char));\
-        *error = '\0';\
-        sprintf(error, "must be `%s`, but actual is `%s`.", #must_be, #actual);\
-        return test_error(error);\
-    }
 #define assert_eq_str(must_be, actual) if (strcmp(must_be, actual) != 0) {\
         char *error = malloc(1024 * sizeof(char));\
         *error = '\0';\
-        sprintf(error, "must be `%s`, but actual is `%s`.", must_be, actual);\
+        sprintf(error, "%s%d must be `%s`, but actual is `%s`.",  __FILE__, __LINE__, must_be, actual);\
         return test_error(error);\
     }
 
+#define assert_eq_int(must_be, actual) if (must_be != actual) {\
+        char *error = malloc(1024 * sizeof(char));\
+        *error = '\0';\
+        sprintf(error, "%s:%d must be `%d`, but actual is `%d`.", __FILE__, __LINE__, must_be, actual);\
+        return test_error(error);\
+    }
+#define assert_pro(must_be, actual, eq, mst2str, act2str) if (eq(must_be, actual) == 0) {\
+        char *error = malloc(1024 * sizeof(char)),\
+            *mst_str = malloc(1024 * sizeof(char)),\
+            *act_str = malloc(1024 * sizeof(char));\
+        *error   = '\0';\
+        *mst_str = '\0';\
+        *act_str = '\0';\
+        mst2str(mst_str, must_be);\
+        act2str(act_str, actual);\
+        sprintf(error, "%s%d must be `%s`, but actual is `%s`.",  __FILE__, __LINE__, mst_str, act_str);\
+        free(act_str); free(mst_str);\
+        return test_error(error);\
+    }
+\
+
+#define assert_null(value) if (value != NULL) {\
+        char *error = malloc(1024 * sizeof(char));\
+        *error = '\0';\
+        sprintf(error, "%s:%d value must be null, but it's: `%ld`.",\
+                __FILE__, __LINE__, (unsigned long) value);\
+        return test_error(error);\
+    }
 /*
 *  _____ _____ ____ _____ ____
 * |_   _| ____/ ___|_   _/ ___|
@@ -52,3 +74,4 @@ iter_c iter_tests(void);
 */
 
 void hsmap_test_init(void);
+void color_test_init(void);
