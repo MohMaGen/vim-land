@@ -39,10 +39,17 @@ start_test(insert)
         free(value_buf);
         free(key_buf);
     }
+end_test
+
+
+start_test(remove)
+    srand(time(NULL));
+
 
 end_test
 
 
 void hsmap_test_init(void) {
     register_test(make_test_t(group, insert));
+    register_test(make_test_t(group, remove));
 }
