@@ -59,6 +59,7 @@ inline void __arena_hsmap_name_push_to_data(arena_hsmap_name_unit *data, size_t 
     while (*next != 0) next = &data[*next].next;
     *next = len;
 }
+
 void arena_hsmap_name_pushp(arena_hsmap_name_t *map, arena_hsmap_name_pair_t pair) {
     if (map->len >= map->cap) {
         size_t lists = get_hsmap_primes()[map->order], new_lists = get_hsmap_primes()[map->order++];
@@ -81,8 +82,6 @@ void arena_hsmap_name_pushp(arena_hsmap_name_t *map, arena_hsmap_name_pair_t pai
     }
     __arena_hsmap_name_push_to_data(map->data, map->len++, map->cap, map->order, pair);
 }
-
-
 
 
 void arena_hsmap_name_push(arena_hsmap_name_t *map, key_type key, value_type value) {
