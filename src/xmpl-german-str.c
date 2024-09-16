@@ -17,6 +17,17 @@ struct german_string {
     };
 };
 
+
+struct str {
+    char *data;
+    size_t len;
+};
+
+struct string {
+    char *data;
+    size_t len, cap;
+};
+
 struct german_string mk_german_string(const char *str, unsigned int len);
 int german_string_eq(struct german_string fst, struct german_string snd);
 

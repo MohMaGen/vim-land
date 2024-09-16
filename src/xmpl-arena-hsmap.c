@@ -1,9 +1,19 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <types.h>
 
 typedef struct { int a,b; } key_type;
 typedef struct { int len; char *data;} value_type;
 #define avg_elements_per_layer 10
+
+size_t hash_func(key_type key) {
+    return *((size_t*)&key);
+}
+
+int eq_func(key_type fst, key_type snd) {
+    return fst.a == snd.a && fst.b == snd.b;
+}
+
 
 typedef struct arena_hsmap_name_pair {
     key_type key; value_type value;
@@ -24,13 +34,24 @@ typedef struct arena_hsmap_name {
 } arena_hsmap_name_t;
 
 arena_hsmap_name_t make_arena_hsmap_name(void);
-void arena_hsmap_name_pushp (arena_hsmap_name_t *map, arena_hsmap_name_pair_t pair);
-void arena_hsmap_name_push  (arena_hsmap_name_t *map, key_type key, value_type value);
+void        free_arena_hsmap_name  (arena_hsmap_name_t *map);
+
+void        arena_hsmap_name_insertp (arena_hsmap_name_t *map, arena_hsmap_name_pair_t pair);
+void        arena_hsmap_name_insert  (arena_hsmap_name_t *map, key_type key, value_type value);
+void        arena_hsmap_name_remove  (arena_hsmap_name_t *map, key_type key);
+value_type *arena_hsmap_name_at      (arena_hsmap_name_t *map, key_type key);
 
 
 int main(void) {
-    //arena_hsmap_name_t map = make_arena_hsmap_name();
+    arena_hsmap_name_t map = make_arena_hsmap_name();
 
+    arena_hsmap_name_insert(&map, (key_type) { 10, 10 }, (value_type) { 20, "Hello" });
+    arena_hsmap_name_insert(&map, (key_type) { 120, 10 }, (value_type) { 20, "Hello" });
+
+    value_type *fst = arena_hsmap_name_at(&map, (key_type) { 10, 10 });
+    printf("fst: (%d %s)\n", fst->len, fst->data);
+
+    free_arena_hsmap_name(&map);
     return 0;
 }
 
@@ -41,17 +62,18 @@ arena_hsmap_name_t make_arena_hsmap_name(void) {
     for (size_t i = 0; i < lists; i++) {
         data[i].list = (arena_hsmap_name_list_t) { 0 };
     }
-    return (arena_hsmap_name_t) {data, 0, cap, 0};
+    return (arena_hsmap_name_t) {data, lists, cap, 0};
 }
 
-size_t hash_func(key_type key) {
-    return *((size_t*)&key);
-}
 
-inline void __arena_hsmap_name_push_to_data(arena_hsmap_name_unit *data, size_t len, size_t cap, size_t order, arena_hsmap_name_pair_t pair) {
-    size_t *next, hash;
+void __arena_hsmap_name_push_to_data(arena_hsmap_name_unit *data, size_t len, size_t cap, size_t order,
+        arena_hsmap_name_pair_t pair)
+{
+    size_t *next, hash, primes;
 
-    hash = hash_func(pair.key) % get_hsmap_primes()[order];
+    primes = get_hsmap_primes()[order];
+
+    hash = hash_func(pair.key) % primes;
     data[len].pair = pair;
     data[len].next = 0;
 
@@ -60,7 +82,7 @@ inline void __arena_hsmap_name_push_to_data(arena_hsmap_name_unit *data, size_t 
     *next = len;
 }
 
-void arena_hsmap_name_pushp(arena_hsmap_name_t *map, arena_hsmap_name_pair_t pair) {
+void arena_hsmap_name_insertp(arena_hsmap_name_t *map, arena_hsmap_name_pair_t pair) {
     if (map->len >= map->cap) {
         size_t lists = get_hsmap_primes()[map->order], new_lists = get_hsmap_primes()[map->order++];
 
@@ -84,6 +106,30 @@ void arena_hsmap_name_pushp(arena_hsmap_name_t *map, arena_hsmap_name_pair_t pai
 }
 
 
-void arena_hsmap_name_push(arena_hsmap_name_t *map, key_type key, value_type value) {
-    arena_hsmap_name_pushp(map, (arena_hsmap_name_pair_t) { key, value });
+void arena_hsmap_name_insert(arena_hsmap_name_t *map, key_type key, value_type value) {
+    arena_hsmap_name_insertp(map, (arena_hsmap_name_pair_t) { key, value });
+}
+
+value_type *arena_hsmap_name_at    (arena_hsmap_name_t *map, key_type key)
+{
+    size_t hash, curr;
+
+    hash = hash_func(key) % get_hsmap_primes()[map->order];
+
+    curr = map->data[hash].list.first;
+    while (curr != 0) {
+        if (eq_func(map->data[curr].pair.key, key)) {
+            return &map->data[curr].pair.value;
+        }
+        curr = map->data[curr].next;
+    }
+
+    return NULL;
+}
+
+void free_arena_hsmap_name(arena_hsmap_name_t *map) {
+    map->len = 0;
+    map->cap = 0;
+    map->order = 0;
+    free(map->data);
 }
