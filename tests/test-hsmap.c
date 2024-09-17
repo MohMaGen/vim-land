@@ -39,9 +39,47 @@ start_test(insert)
         free(value_buf);
         free(key_buf);
     }
-
 end_test
 
+
+hsmap_ints_pair_t *get_pairs(void);
+hsmap_ints_pair_t *get_new_pairs(void);
+start_test(append)
+    hsmap_ints_t ints_map = alloc_hsmap_ints(1);
+    hsmap_ints_append(&ints_map, get_pairs(), 100);
+
+
+    for (int i = 1; i <= 100; i++) {
+        int *res = hsmap_ints_at(&ints_map, i);
+        assert_eq_int(i, *res);
+    }
+
+    hsmap_ints_append(&ints_map, get_new_pairs(), 100);
+    for (int i = 1; i <= 100; i++) {
+        int *res = hsmap_ints_at(&ints_map, i);
+        assert_eq_int(i + 1, *res);
+    }
+
+    hsmap_ints_free(&ints_map);
+end_test
+
+
+start_test(remove)
+    hsmap_ints_t ints_map = alloc_hsmap_ints(1);
+    hsmap_ints_append(&ints_map, get_pairs(), 100);
+
+    assert_eq_int(10, *hsmap_ints_at(&ints_map, 10))
+    hsmap_ints_remove(&ints_map, 10);
+    assert_null(hsmap_ints_at(&ints_map, 10))
+
+    hsmap_ints_free(&ints_map);
+end_test
+
+void hsmap_test_init(void) {
+    register_test(make_test_t(hsmap, insert));
+    register_test(make_test_t(hsmap, append));
+    register_test(make_test_t(hsmap, remove));
+}
 
 hsmap_ints_pair_t pairs[] = {
     (hsmap_ints_pair_t) { 1, 1 },
@@ -248,26 +286,7 @@ hsmap_ints_pair_t pairs_new[] = {
     (hsmap_ints_pair_t) { 99, 100 },
     (hsmap_ints_pair_t) { 100, 101 },
 };
-start_test(append)
-    srand(time(NULL));
-
-    hsmap_ints_t ints_map = alloc_hsmap_ints(1);
-    hsmap_ints_append(&ints_map, pairs, 100);
 
 
-    for (int i = 1; i <= 100; i++) {
-        int *res = hsmap_ints_at(&ints_map, i);
-        assert_eq_int(i, *res);
-    }
-
-    hsmap_ints_append(&ints_map, pairs_new, 100);
-    for (int i = 1; i <= 100; i++) {
-        int *res = hsmap_ints_at(&ints_map, i);
-        assert_eq_int(i + 1, *res);
-    }
-end_test
-
-void hsmap_test_init(void) {
-    register_test(make_test_t(group, insert));
-    register_test(make_test_t(group, append));
-}
+hsmap_ints_pair_t *get_pairs(void) { return pairs; }
+hsmap_ints_pair_t *get_new_pairs(void) { return pairs_new; }

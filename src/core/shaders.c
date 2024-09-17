@@ -19,7 +19,12 @@ Shader sht2rls(shader_t shader) {
 #define get_location(shader, location) vec_int_push(&shader.custom_locs,\
             GetShaderLocation(sht2rls(shader), #location))
 
-
+void begin_shader_mode(shader_name_e name) {
+    BeginShaderMode(sht2rls(get_shader(name)));
+}
+void end_shader_mode(void) {
+    EndShaderMode();
+}
 
 void init_shaders(void) {
     shaders = alloc_vec_shader(20);
