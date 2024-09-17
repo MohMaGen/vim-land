@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <types.h>
 
+
 typedef struct { int a,b; } key_type;
 typedef struct { int len; char *data;} value_type;
 #define avg_elements_per_layer 10
@@ -18,6 +19,7 @@ int eq_func(key_type fst, key_type snd) {
 typedef struct arena_hsmap_name_pair {
     key_type key; value_type value;
 } arena_hsmap_name_pair_t;
+opt_(arena_hsmap_name_pair, arena_hsmap_name_pair_t*);
 
 typedef struct arena_hsmap_name_list {
     size_t first;
@@ -41,6 +43,11 @@ void        arena_hsmap_name_insert  (arena_hsmap_name_t *map, key_type key, val
 void        arena_hsmap_name_remove  (arena_hsmap_name_t *map, key_type key);
 value_type *arena_hsmap_name_at      (arena_hsmap_name_t *map, key_type key);
 
+typedef struct arena_hsmap_name_iter {
+    arena_hsmap_name_unit *data; size_t list_idx, row_idx, lists;
+} arena_hsmap_name_iter_t;
+iter_c arena_hsmap_name_iter(arena_hsmap_name_t *map);
+opt_ptr_c arena_hsmap_name_iter_next(void *self);
 
 int main(void) {
     arena_hsmap_name_t map = make_arena_hsmap_name();
@@ -50,6 +57,24 @@ int main(void) {
 
     value_type *fst = arena_hsmap_name_at(&map, (key_type) { 10, 10 });
     printf("fst: (%d %s)\n", fst->len, fst->data);
+
+    value_type *snd = arena_hsmap_name_at(&map, (key_type) { 120, 10 });
+    printf("snd: (%d %s)\n", snd->len, snd->data);
+    arena_hsmap_name_remove(&map, (key_type) { 120, 10 });
+    snd = arena_hsmap_name_at(&map, (key_type) { 120, 10 });
+    printf("snd: %d (%ld)\n", snd == NULL, (unsigned long) snd);
+
+    arena_hsmap_name_insert(&map, (key_type) { 10, 112 }, (value_type) { 20, "Hello" });
+    arena_hsmap_name_insert(&map, (key_type) { 120, 12123 }, (value_type) { 20, "Hello" });
+    arena_hsmap_name_insert(&map, (key_type) { 120, 1212 }, (value_type) { 20, "Helloiii" });
+
+    iter_c iter = arena_hsmap_name_iter(&map);
+    for_each(it, iter) {
+        arena_hsmap_name_pair_t *pair = unwrap_ptr(arena_hsmap_name_pair_t, it);
+        if (pair == NULL) continue;
+
+        printf("(%d, %d): [%d, %s]\n", pair->key.a, pair->key.b, pair->value.len, pair->value.data);
+    }
 
     free_arena_hsmap_name(&map);
     return 0;
@@ -110,7 +135,7 @@ void arena_hsmap_name_insert(arena_hsmap_name_t *map, key_type key, value_type v
     arena_hsmap_name_insertp(map, (arena_hsmap_name_pair_t) { key, value });
 }
 
-value_type *arena_hsmap_name_at    (arena_hsmap_name_t *map, key_type key)
+value_type *arena_hsmap_name_at(arena_hsmap_name_t *map, key_type key)
 {
     size_t hash, curr;
 
@@ -133,3 +158,53 @@ void free_arena_hsmap_name(arena_hsmap_name_t *map) {
     map->order = 0;
     free(map->data);
 }
+
+void arena_hsmap_name_remove(arena_hsmap_name_t *map, key_type key) {
+    size_t hash, curr, prev = 0;
+
+    hash = hash_func(key) % get_hsmap_primes()[map->order];
+
+    curr = map->data[hash].list.first;
+    while (curr != 0) {
+        if (eq_func(map->data[curr].pair.key, key)) {
+            if (prev == 0) {
+                map->data[hash].list.first = map->data[curr].next;
+            } else {
+                map->data[prev].next = map->data[curr].next;
+            }
+        }
+        prev = curr;
+        curr = map->data[curr].next;
+    }
+}
+
+iter_c arena_hsmap_name_iter(arena_hsmap_name_t *map) {
+    arena_hsmap_name_iter_t *iter = malloc(sizeof(arena_hsmap_name_iter_t));
+
+    *iter = (arena_hsmap_name_iter_t) {map->data, 0, 0, get_hsmap_primes()[map->order]};
+
+    return (iter_c) { (void*)iter, &arena_hsmap_name_iter_next };
+}
+
+opt_ptr_c arena_hsmap_name_iter_next(void *self) {
+    arena_hsmap_name_iter_t *self_c = (arena_hsmap_name_iter_t*)self;
+    arena_hsmap_name_pair_t pair;
+
+
+    if (self_c->row_idx == 0) {
+        self_c->list_idx++;
+        while (self_c->list_idx < self_c->lists && self_c->data[self_c->list_idx].list.first == 0)
+            self_c->list_idx++;
+
+        if (self_c->list_idx >= self_c->lists) return none_opt_f32();
+
+        self_c->row_idx = self_c->data[self_c->list_idx].list.first;
+    }
+
+    pair = self_c->data[self_c->row_idx].pair;
+    self_c->row_idx = self_c->data[self_c->row_idx].next;
+
+    return alloc_opt_arena_hsmap_name_pair(&pair);
+}
+
+impl_opt_(arena_hsmap_name_pair, arena_hsmap_name_pair_t *)
