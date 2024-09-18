@@ -2,6 +2,45 @@
 #include <types.h>
 
 
+
+color_t hex_color(uint32_t color) {
+    uint8_t r,g,b,a;
+    if (color > 0xffffff) {
+        r = color / 0x1000000; color %= 0x1000000;
+        g = color / 0x10000; color %= 0x10000;
+        b = color / 0x100; color %= 0x100;
+        a = color;
+    } else if (color > 0xffff) {
+        r = color / 0x10000; color %= 0x10000;
+        g = color / 0x100; color %= 0x100;
+        b = color;
+        a = 0xff;
+    } else if (color > 0xfff) {
+        r = (color / 0x1000) * 0x10 + color / 0x1000; color %= 0x1000;
+        g = (color / 0x100) * 0x10 + color / 0x100; color %= 0x100;
+        b = (color / 0x10) * 0x10 + color / 0x10; color %= 0x10;
+        a = color * 0x10 + color;
+    } else if (color > 0xff) {
+        r = (color / 0x100) * 0x10 + color / 0x100; color %= 0x100;
+        g = (color / 0x10) * 0x10 + color / 0x10; color %= 0x10;
+        b = color * 0x10 + color;
+        a = 0xFF;
+    } else if (color > 0xf) {
+        r = color;
+        g = color;
+        b = color;
+        a = color;
+    } else {
+        r = color * 0x10 + color;
+        g = color * 0x10 + color;
+        b = color * 0x10 + color;
+        a = color * 0x10 + color;
+    }
+    return (color_t) { r, g, b, a };
+}
+
+
+
 impl_opt_(int, int)
 impl_opt_(usize, size_t)
 
@@ -168,3 +207,4 @@ impl_hsmap_str_to_(uint64, uint64_t)
 
 impl_hsmap_str_to_(f32, float)
 impl_hsmap_str_to_(f64, double)
+

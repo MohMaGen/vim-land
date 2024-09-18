@@ -54,4 +54,10 @@ shader_t get_shader(shader_name_e name) {
 }
 
 
+void set_shader_uniform(shader_name_e name, size_t uniform_idx, void *data, int uniform_type) {
+    shader_t shader = shaders.data[(unsigned int)name];
+    Shader shader_rl = sht2rls(shader);
+    SetShaderValue(shader_rl, shader.custom_locs.data[uniform_idx], data, uniform_type);
+}
+
 impl_vec_(shader, shader_t)
