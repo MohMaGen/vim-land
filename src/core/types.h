@@ -3,16 +3,42 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-typedef struct pixel_size { uint32_t widht, height; }   px_size_t;
-typedef struct pixel_pair { uint32_t fst, snd; }        px_pair_t;
-typedef struct pixel_pos  { uint32_t x, y; }            px_pos_t;
 
-#define mkpx_size (width, height)   ((px_size_t) { widht, height })
-#define mkpx_pair (fst, snd)        ((px_pair_t) { fst, snd })
-#define mkpx_pos  (x, y)            ((px_pos_t)  { x, y })
 
-#define px_p2size (pair)            ((px_size_t) { pair.fst, pair.snd })
-#define px_p2pos  (pair)            ((px_pos_t)  { pair.fst, pair.snd })
+typedef struct color {
+    uint8_t r,g,b,a;
+} color_t;
+
+#define white_color_v ((color_t) { 255, 255, 255, 255 })
+#define bacl_color_v ((color_t) {0, 0, 0, 255})
+#define rgb_color(r, g, b) ((color_t) {r, g, b, 255})
+
+color_t hex_color(uint32_t color);
+#define color2rl(color) ((Color) { color.r, color.g, color.b, color.a})
+
+
+
+typedef struct pixel_size { uint16_t width, height; }   px_size_t;
+typedef struct pixel_pair { int16_t  fst, snd; }        px_pair_t;
+typedef struct pixel_pos  { int16_t  x, y; }            px_pos_t;
+
+typedef struct fpixel_size { float width, height; }   fpx_size_t;
+typedef struct fpixel_pair { float fst, snd; }        fpx_pair_t;
+typedef struct fpixel_pos  { float x, y; }            fpx_pos_t;
+
+#define mkfpx_size(width, height)   ((fpx_size_t) { width, height })
+#define mkfpx_pair(fst, snd)        ((fpx_pair_t) { fst, snd })
+#define mkfpx_pos(x, y)             ((fpx_pos_t)  { x, y })
+
+#define fpx_p2size(pair)            ((fpx_size_t) { pair.fst, pair.snd })
+#define fpx_p2pos(pair)             ((fpx_pos_t)  { pair.fst, pair.snd })
+
+#define mkpx_size(width, height)   ((px_size_t) { width, height })
+#define mkpx_pair(fst, snd)        ((px_pair_t) { fst, snd })
+#define mkpx_pos(x, y)             ((px_pos_t)  { x, y })
+
+#define px_p2size(pair)            ((px_size_t) { pair.fst, pair.snd })
+#define px_p2pos(pair)             ((px_pos_t)  { pair.fst, pair.snd })
 
 
 typedef struct opt_ptr_c {

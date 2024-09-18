@@ -12,6 +12,14 @@ typedef enum shader_name {
     fill_rect_v = 0
 } shader_name_e;
 
+typedef enum fille_rect_uniforsm {
+    fr_upper_left_v = 0,
+    fr_width_height_v,
+    fr_corner_raidus_v,
+    fr_border_width_v,
+    fr_border_color_v
+} fille_rect_uniforsm;
+
 void init_shaders(void);
 void free_shaders(void);
 

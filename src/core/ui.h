@@ -2,20 +2,20 @@
 
 #include <types.h>
 
-typedef struct color {
-    uint8_t r,g,b,a;
-} color_t;
+typedef struct border {
+    color_t border_color;
+    float   border_width;
+    float   border_radius;
+} border_t;
 
-#define white_color_v ((color_t) { 255, 255, 255, 255 });
-#define bacl_color_v ((color_t) {0, 0, 0, 255});
-#define rgb_color(r, g, b) ((color_t) {r, g, b, 255});
-
-color_t hex_color(uint32_t color);
+#define mk_border(color_hex, border_width, border_radius) ((border_t) {hex_color(color_hex), border_width, border_radius})
 
 typedef struct container {
-    px_size_t size;
-    px_pos_t pos;
-    color_t bg_fill;
+    fpx_pos_t   pos;
+    fpx_size_t  size;
+    color_t     bg_fill;
+
+    border_t    border;
 } container_t;
 
 

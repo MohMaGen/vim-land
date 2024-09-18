@@ -4,43 +4,15 @@
 
 
 void draw_container(container_t container) {
+    float pos[2] = { container.pos.x, ((float) GetScreenHeight()) - container.pos.y };
+
+    set_shader_uniform(fill_rect_v, fr_upper_left_v,    &pos,                               SHADER_UNIFORM_VEC2);
+    set_shader_uniform(fill_rect_v, fr_width_height_v,  &container.size,                    SHADER_UNIFORM_VEC2);
+    set_shader_uniform(fill_rect_v, fr_corner_raidus_v, &container.border.border_radius,    SHADER_UNIFORM_FLOAT);
+    set_shader_uniform(fill_rect_v, fr_border_width_v,  &container.border.border_width,     SHADER_UNIFORM_FLOAT);
+    set_shader_uniform(fill_rect_v, fr_border_color_v,  &container.border.border_color,     SHADER_UNIFORM_IVEC4);
+
     begin_shader_mode(fill_rect_v);
+    DrawRectangle(container.pos.x, container.pos.y, container.size.width, container.size.height, color2rl(container.bg_fill));
     end_shader_mode();
-}
-
-
-color_t hex_color(uint32_t color) {
-    uint8_t r,g,b,a;
-    if (color > 0xffffff) {
-        r = color / 0x1000000; color %= 0x1000000;
-        g = color / 0x10000; color %= 0x10000;
-        b = color / 0x100; color %= 0x100;
-        a = color;
-    } else if (color > 0xffff) {
-        r = color / 0x10000; color %= 0x10000;
-        g = color / 0x100; color %= 0x100;
-        b = color;
-        a = 0xff;
-    } else if (color > 0xfff) {
-        r = (color / 0x1000) * 0x10 + color / 0x1000; color %= 0x1000;
-        g = (color / 0x100) * 0x10 + color / 0x100; color %= 0x100;
-        b = (color / 0x10) * 0x10 + color / 0x10; color %= 0x10;
-        a = color * 0x10 + color;
-    } else if (color > 0xff) {
-        r = (color / 0x100) * 0x10 + color / 0x100; color %= 0x100;
-        g = (color / 0x10) * 0x10 + color / 0x10; color %= 0x10;
-        b = color * 0x10 + color;
-        a = 0xFF;
-    } else if (color > 0xf) {
-        r = color;
-        g = color;
-        b = color;
-        a = color;
-    } else {
-        r = color * 0x10 + color;
-        g = color * 0x10 + color;
-        b = color * 0x10 + color;
-        a = color * 0x10 + color;
-    }
-    return (color_t) { r, g, b, a };
 }

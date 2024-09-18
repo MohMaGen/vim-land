@@ -8,7 +8,7 @@ uniform vec2 upper_left;
 uniform vec2 width_height;
 uniform float corner_radius;
 uniform float border_width;
-uniform vec4 border_color;
+uniform ivec4 border_color;
 
 out vec4 color;
 
@@ -32,8 +32,7 @@ void main() {
     if (i > 0) {
         color = vec4(fragColor.rgb, i * fragColor.a);
     } else {
-        color = vec4(border_color.rgb, b * fragColor.a);
+        color = vec4(border_color.rgb / 255.f, b * fragColor.a);
     }
-    //color = vec4(border_color.rgb, b);
 }
 
